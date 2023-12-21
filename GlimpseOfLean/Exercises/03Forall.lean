@@ -91,7 +91,12 @@ symbol you can put your mouse cursor above the symbol and wait for one second.
 -/
 
 example (f g : ℝ → ℝ) (hf : even_fun f) : even_fun (g ∘ f) := by {
-  sorry
+  unfold even_fun
+  intro x
+  calc
+    (g ∘ f) (-x) = g ( f (-x) ) := by rfl
+               _ = g ( f (x) )  := by rw [hf]
+               _ = (g ∘ f) (x)  := by rfl
 }
 
 /-
@@ -107,6 +112,7 @@ def non_increasing (f : ℝ → ℝ) := ∀ x₁ x₂, x₁ ≤ x₂ → f x₁ 
 /- Let's be very explicit and use forward reasoning first. -/
 example (f g : ℝ → ℝ) (hf : non_decreasing f) (hg : non_decreasing g) :
     non_decreasing (g ∘ f) := by {
+  unfold non_decreasing
   -- Let x₁ and x₂ be real numbers such that x₁ ≤ x₂
   intro x₁ x₂ h
   -- Since f is non-decreasing, f x₁ ≤ f x₂.
@@ -129,8 +135,15 @@ use the `specialize` tactic to replace `hf` by its specialization to the relevan
 example (f g : ℝ → ℝ) (hf : non_decreasing f) (hg : non_decreasing g) :
     non_decreasing (g ∘ f) := by {
   intro x₁ x₂ h
+  unfold non_decreasing at hf
+  unfold non_decreasing at hg
   specialize hf x₁ x₂ h
   exact hg (f x₁) (f x₂) hf
+}
+
+example (h : ∀ x y : ℕ, x < y → x * x < y * y) (a b : ℕ) (hab : a < b) : a * a < b * b := by {
+  specialize h a b hab
+  exact h
 }
 
 /-
@@ -165,8 +178,15 @@ example (f g : ℝ → ℝ) (hf : non_decreasing f) (hg : non_decreasing g) :
 
 example (f g : ℝ → ℝ) (hf : non_decreasing f) (hg : non_increasing g) :
     non_increasing (g ∘ f) := by {
-  sorry
+    unfold non_increasing
+    unfold non_decreasing at hf
+    unfold non_increasing at hg
+    intro x₁ x₂ h
+    apply hg
+    apply hf
+    exact h
 }
+
 
 /- # Finding lemmas
 
@@ -180,14 +200,15 @@ The following exercises teach you two such techniques.
 /- Use `simp` to prove the following. Note that `X : Set ℝ`
 means that `X` is a set containing (only) real numbers. -/
 example (x : ℝ) (X Y : Set ℝ) (hx : x ∈ X) : x ∈ (X ∩ Y) ∪ (X \ Y) := by {
-  sorry
+  simp
+  exact hx
 }
 
 /- Use `apply?` to find the lemma that every continuous function with compact support
 has a global minimum. -/
 
 example (f : ℝ → ℝ) (hf : Continuous f) (h2f : HasCompactSupport f) : ∃ x, ∀ y, f x ≤ f y := by {
-  sorry
+  exact Continuous.exists_forall_le_of_hasCompactSupport hf h2f
 }
 
 /-
